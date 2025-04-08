@@ -7,6 +7,10 @@ langchain-ollama
 langchain-groq
 groq
 openai
+# Due to trimmer, below two are needed. But they come with multiple deps and at least 1.5GB of downloads, if u turn of trimmer, you can ignore these two.
+# Code without trimmer is commented out.
+transformers
+torch --index-url https://download.pytorch.org/whl/cpu
 
 # With versions:
 # streamlit==1.44.1
@@ -18,3 +22,4 @@ openai
 # langchain-groq==0.3.2
 # groq==0.22.0
 # openai==1.70.0
+# transformers==4.51.0
