@@ -30,7 +30,7 @@ st.set_page_config(
 )
 
 if "init" not in st.session_state:
-    st.session_state.providers = ["OpenAI", "Groq", "Ollama"]
+    st.session_state.providers = ["OpenAI", "Groq", "Ollama", "Google"]
     st.session_state.provider = None
     st.session_state.model = None
     st.session_state.user_api_key = None
@@ -67,6 +67,11 @@ def get_model_list(provider: str) -> List[str]:
         import ollama
         return [model.model for model in ollama.list().models]
 
+    elif provider == "Google":
+        from google import genai
+        client = genai.Client(api_key=st.secrets.Google.API_KEY)
+        return [model.name for model in client.models.list()]
+
     else:
         return ["demo-model"]
 
@@ -90,6 +95,16 @@ def get_api_key(provider: str) -> str | None:
             pass
         try:
             return os.getenv("GROQ_API_KEY")
+        except:
+            pass
+
+    elif provider == "Google":
+        try:
+            return st.secrets.Google.API_KEY
+        except:
+            pass
+        try:
+            return os.getenv("GEMINI_API_KEY")
         except:
             pass
 
@@ -141,6 +156,11 @@ def get_llm_response_stream(prompt: str) -> Generator[str, None, None]:
     elif st.session_state.provider == "Ollama":
         from langchain_ollama import ChatOllama
         llm = ChatOllama(model=st.session_state.model)
+
+    elif st.session_state.provider == "Google":
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        llm = ChatGoogleGenerativeAI(
+            model=st.session_state.model, api_key=st.secrets.Google.API_KEY)
 
     else:
         st.error("Some un-expected error occurred...", icon="🤖")
