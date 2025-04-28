@@ -30,10 +30,10 @@ st.set_page_config(
 )
 
 if "init" not in st.session_state:
-    st.session_state.api = None
     st.session_state.providers = ["OpenAI", "Groq", "Ollama"]
     st.session_state.provider = None
     st.session_state.model = None
+    st.session_state.user_api_key = None
 
     st.session_state.chat_history = [
         AIMessage("Hello 👋! How can I assist you today?")]
@@ -49,6 +49,9 @@ if "init" not in st.session_state:
 def get_model_list(provider: str) -> List[str]:
     """Returns the list of available models from given provider."""
     # sleep(3)
+
+    # Update API key in session state:
+    st.session_state.user_api_key = get_api_key(provider)
 
     if provider == "Groq":
         from groq import Groq
@@ -66,6 +69,31 @@ def get_model_list(provider: str) -> List[str]:
 
     else:
         return ["demo-model"]
+
+
+def get_api_key(provider: str) -> str | None:
+    """Returns the API key, if present in secrets or .env"""
+    if provider == "OpenAI":
+        try:
+            return st.secrets.OpenAI.API_KEY
+        except:
+            pass
+        try:
+            return os.getenv("OPENAI_API_KEY")
+        except:
+            pass
+
+    elif provider == "Groq":
+        try:
+            return st.secrets.Groq.API_KEY
+        except:
+            pass
+        try:
+            return os.getenv("GROQ_API_KEY")
+        except:
+            pass
+
+    return None
 
 
 def get_session_history() -> BaseChatMessageHistory:
@@ -117,16 +145,16 @@ def get_llm_response_stream(prompt: str) -> Generator[str, None, None]:
     else:
         st.error("Some un-expected error occurred...", icon="🤖")
 
+    # Output parser:
+    parser = StrOutputParser()
+
+    # Chain with trimmer:
     # Trimmer:
     trimmer = trim_messages(
         max_tokens=2000, strategy="last",
         token_counter=llm, include_system=False,
         allow_partial=True, start_on=HumanMessage
     )
-    # Tested and WORKING 🥳
-
-    # Output parser:
-    parser = StrOutputParser()
 
     # Chain them all:
     chain = (
@@ -139,6 +167,15 @@ def get_llm_response_stream(prompt: str) -> Generator[str, None, None]:
         | llm
         | parser
     )
+    # Tested and WORKING 🥳
+
+    # # Chain without the trimmer:
+    # # Comment out the trimmer and chain above to use this:
+    # chain = (
+    #     template
+    #     | llm
+    #     | parser
+    # )
 
     llm_with_history = RunnableWithMessageHistory(
         runnable=chain,
@@ -181,7 +218,8 @@ st.sidebar.text_input(
     label="Enter your API Key:",
     placeholder="API Key 👀",
     type="password",
-    key="api_key"
+    key="user_api_key",
+    value=st.session_state.user_api_key if st.session_state.user_api_key else None,
 )
 
 if st.sidebar.text_input(label="AI Name:", value="Sahayak", max_chars=50, key="name"):
