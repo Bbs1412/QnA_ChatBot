@@ -25,6 +25,7 @@ It also serves as a way to apply my learnings from the Langchain ecosystem into 
 + 🔄 Switch between multiple LLM providers:
     - OpenAI
     - Groq
+    - Google
     - Ollama (Local LLM)
 
 + 🧠 Dynamically lists available models based on the selected provider.
@@ -39,6 +40,18 @@ It also serves as a way to apply my learnings from the Langchain ecosystem into 
   - `StringOutputParser`
 
 - 🚧 Change LLM provider and model **on the fly** with zero restarts.
+
+
+### Screenshot:
+
+- Choosing a provider:
+![Provider Selection Screenshot](./assets/1_choose_provider.png)
+
+- Dynamic model listing:
+![Dynamic Model Listing Screenshot](./assets/2_list_models.png)
+
+- Chatbot interface:
+![Chatbot Interface Screenshot](./assets/3_demo_chat.png)
 
 
 ### Tech Stack:
