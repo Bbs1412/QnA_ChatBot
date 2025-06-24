@@ -55,12 +55,12 @@ def get_model_list(provider: str) -> List[str]:
 
     if provider == "Groq":
         from groq import Groq
-        client = Groq(api_key=st.secrets.Groq.API_KEY)
+        client = Groq(api_key=st.session_state.user_api_key)
         return [model.id for model in client.models.list().data]
 
     elif provider == "OpenAI":
         from openai import OpenAI
-        client = OpenAI(api_key=st.secrets.OpenAI.API_KEY)
+        client = OpenAI(api_key=st.session_state.user_api_key)
         return [model.id for model in client.models.list().data]
 
     elif provider == "Ollama":
@@ -69,7 +69,7 @@ def get_model_list(provider: str) -> List[str]:
 
     elif provider == "Google":
         from google import genai
-        client = genai.Client(api_key=st.secrets.Google.API_KEY)
+        client = genai.Client(api_key=st.session_state.user_api_key)
         return [model.name for model in client.models.list()]
 
     else:
@@ -146,21 +146,22 @@ def get_llm_response_stream(prompt: str) -> Generator[str, None, None]:
     if st.session_state.provider == "OpenAI":
         from langchain_openai import ChatOpenAI
         llm = ChatOpenAI(
-            model=st.session_state.model, api_key=st.secrets.OpenAI.API_KEY)
+            model=st.session_state.model, api_key=st.session_state.user_api_key)
 
     elif st.session_state.provider == "Groq":
         from langchain_groq import ChatGroq
         llm = ChatGroq(
-            model=st.session_state.model, api_key=st.secrets.Groq.API_KEY)
+            model=st.session_state.model, api_key=st.session_state.user_api_key)
 
     elif st.session_state.provider == "Ollama":
         from langchain_ollama import ChatOllama
         llm = ChatOllama(model=st.session_state.model)
+        # llm = ChatOllama(base_url="http://host.docker.internal:11434" ,model=st.session_state.model)
 
     elif st.session_state.provider == "Google":
         from langchain_google_genai import ChatGoogleGenerativeAI
         llm = ChatGoogleGenerativeAI(
-            model=st.session_state.model, api_key=st.secrets.Google.API_KEY)
+            model=st.session_state.model, api_key=st.session_state.user_api_key)
 
     else:
         st.error("Some un-expected error occurred...", icon="🤖")
